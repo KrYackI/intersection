@@ -4,6 +4,7 @@ struct point
 {
 	double x;
 	double y;
+	point() { x = 0; y = 0; }
 	point(double _x, double _y) : x(_x), y(_y) {};
 	bool operator<(const point& r)
 	{
@@ -17,13 +18,22 @@ struct point
 	}
 };
 
+
+
 class line
 {
 	point left;
 	point right;
+	//int num;
 public:
+	line() {}
 	line(point l, point r) : left(l), right(r) {}; 
 	line(double x1, double y1, double x2, double y2) : left(x1, y1), right(x2, y2) {};
+	point getLeft() { return left; }
+	point getRight() { return right; }
+	//int getNum() { return num; }
+	void set(double x1, double y1, double x2, double y2) { left.x = x1; left.y = y1; right.x = x2; right.y = y2; }
+	void set(point l, point r) { left = l; right = r; }
 	bool intersect(line t)
 	{
 		double t1, t2;
@@ -37,7 +47,38 @@ public:
 
 		double x = t.left.x - t2 * dx2;
 
-		if (t.left.x <= x && x <= t.right.x) return true;
+		if (t2 > -1e-19 && t.left.x <= x && x <= t.right.x) return true;
 		return false;
+	}
+};
+
+struct CntPoint
+{
+	point pt;
+	line* ln;
+	CntPoint(point _pt, line* _ln) : pt(_pt), ln(_ln) {}
+	bool operator==(const CntPoint p) const
+	{
+		return ln == p.ln;
+	}
+	bool operator!=(const CntPoint p) const
+	{
+		return ln != p.ln;
+	}
+	bool operator>(const CntPoint p) const
+	{
+		return pt.y > p.pt.y;
+	}
+	bool operator>=(const CntPoint p) const
+	{
+		return pt.y >= p.pt.y;
+	}
+	bool operator<(const CntPoint p) const
+	{
+		return pt.y < p.pt.y;
+	}
+	bool operator<=(const CntPoint p) const
+	{
+		return pt.y <= p.pt.y;
 	}
 };

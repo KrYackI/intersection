@@ -1,55 +1,100 @@
 #pragma once
 
-template <class T>
-struct Node
-{
-	T value;
-	Node<T>* left = nullptr;
-	Node<T>* right = nullptr;
-	int balance = 0;
-	Node(T _val) : value(_val) {};
-	Node(const Node& _node)
-	{
-		value = _node.value;
-		if (_node.left)
-			left = new Node(*_node.left);
-		if (_node.right)
-			right = new Node(*_node.right);
-		balance = _node.balance;
-	}
-	Node& operator=(const Node& _node)
-	{
-		if (&_node == this)
-			return *this;
-		delete left;
-		delete right;
-		value = _node.value;
-		balance = _node.balance;
-		if (_node.left)
-			left = new Node(*_node.left);
-		else
-			left = nullptr;
-		if (_node.right)
-			right = new Node(*_node.right);
-		else
-			right = nullptr;
-		return *this;
-	}
-
-	~Node()
-	{
-		delete left;
-		delete right;
-	}
-};
+//template <class T>
+//struct Node
+//{
+//	T value;
+//	Node* left = nullptr;
+//	Node* right = nullptr;
+//	int balance = 0;
+//	Node(T _val) : value(_val) {};
+//	Node(const Node& _node)
+//	{
+//		value = _node.value;
+//		if (_node.left)
+//			left = new Node(*_node.left);
+//		if (_node.right)
+//			right = new Node(*_node.right);
+//		balance = _node.balance;
+//	}
+//	Node& operator=(const Node& _node)
+//	{
+//		if (&_node == this)
+//			return *this;
+//		delete left;
+//		delete right;
+//		value = _node.value;
+//		balance = _node.balance;
+//		if (_node.left)
+//			left = new Node(*_node.left);
+//		else
+//			left = nullptr;
+//		if (_node.right)
+//			right = new Node(*_node.right);
+//		else
+//			right = nullptr;
+//		return *this;
+//	}
+//
+//	~Node()
+//	{
+//		delete left;
+//		delete right;
+//	}
+//};
 
 template <class T>
 class AVLtree
 {
-	Node<T>* root;
-	Node<T>* right_rot(Node<T>* cur, bool p)
+public:
+
+	struct Node
 	{
-		Node<T>* l = cur->left;
+		T value;
+		Node* left = nullptr;
+		Node* right = nullptr;
+		int balance = 0;
+		Node(T _val) : value(_val) {};
+		Node(const Node& _node)
+		{
+			value = _node.value;
+			if (_node.left)
+				left = new Node(*_node.left);
+			if (_node.right)
+				right = new Node(*_node.right);
+			balance = _node.balance;
+		}
+		Node& operator=(const Node& _node)
+		{
+			if (&_node == this)
+				return *this;
+			delete left;
+			delete right;
+			value = _node.value;
+			balance = _node.balance;
+			if (_node.left)
+				left = new Node(*_node.left);
+			else
+				left = nullptr;
+			if (_node.right)
+				right = new Node(*_node.right);
+			else
+				right = nullptr;
+			return *this;
+		}
+
+		~Node()
+		{
+			delete left;
+			delete right;
+		}
+	};
+
+private:
+	Node* root;
+	Node* right_rot(Node* cur, bool p)
+	{
+		Node* l = cur->left;
 		cur->left = l->right;
 		l->right = cur;
 		if (p)
@@ -73,9 +118,9 @@ class AVLtree
 		}
 		return l;
 	}
-	Node<T>* left_rot(Node<T>* cur, bool p)
+	Node* left_rot(Node* cur, bool p)
 	{
-		Node<T>* r = cur->right;
+		Node* r = cur->right;
 		cur->right = r->left;
 		r->left = cur;
 		if (p)
@@ -99,10 +144,10 @@ class AVLtree
 		}
 		return r;
 	}
-	Node<T>* big_right_rot(Node<T>* cur, bool p)
+	Node* big_right_rot(Node* cur, bool p)
 	{
-		Node<T>* p1 = cur->left;
-		Node<T>* p2 = p1->right;
+		Node* p1 = cur->left;
+		Node* p2 = p1->right;
 		p1->right = p2->left;
 		p2->left = p1;
 		cur->left = p2->right;
@@ -120,10 +165,10 @@ class AVLtree
 
 		return p2;
 	}
-	Node<T>* big_left_rot(Node<T>* cur, bool p)
+	Node* big_left_rot(Node* cur, bool p)
 	{
-		Node<T>* p1 = cur->right;
-		Node<T>* p2 = p1->left;
+		Node* p1 = cur->right;
+		Node* p2 = p1->left;
 		p1->left = p2->right;
 		p2->right = p1;
 		cur->right = p2->left;
@@ -142,12 +187,12 @@ class AVLtree
 		return p1;
 	}
 
-	Node<T>* add(T& _val, Node<T>* par, bool& h)
+	Node* add(T& _val, Node* par, bool& h)
 	{
 		if (par == nullptr)
 		{
 			h = true;
-			return new Node<T>(_val);
+			return new Node(_val);
 		}
 		else
 			if (_val < par->value)
@@ -198,13 +243,13 @@ class AVLtree
 		return par;
 	}
 
-	Node<T>* delThis(Node<T>* cur, T& _val, bool& h)
+	Node* delThis(Node* cur, T& _val, bool& h)
 	{
 		if (cur->left != nullptr) cur->left = delThis(cur->left, _val, h);
 		else
 		{
 			_val = cur->value;
-			Node<T>* t = cur->right;
+			Node* t = cur->right;
 			cur->right = nullptr;
 			delete cur;
 			h = true;
@@ -231,14 +276,14 @@ class AVLtree
 		return cur;
 	}
 
-	Node<T>* del(Node<T>* cur, T& _val, bool& h)
+	Node* del(Node* cur, T& _val, bool& h)
 	{
 		if (cur == nullptr) return cur;
 
 
 		if (cur->value == _val)
 		{
-			Node<T>* t = cur;
+			Node* t = cur;
 			if (t->left == nullptr && t->right == nullptr)
 			{
 				h = true;
@@ -337,25 +382,21 @@ public:
 	AVLtree(const AVLtree& _tree)
 	{
 		if (_tree.root)
-			root = new Node<T>{ *_tree.root };
+			root = new Node{ *_tree.root };
 	}
 	AVLtree& operator=(const AVLtree& _tree)
 	{
 		if (&_tree == this)
 			return *this;
+		delete root;
 		root = _tree.root;
 		return *this;
 	}
 
-	void add(T _val)
+	void insert(T _val)
 	{
-		if (!root)
-		{
-			root = new Node<T>(_val);
-			return;
-		}
 		bool h = false;
-		add(_val, root, h);
+		root = add(_val, root, h);
 	}
 
 	void remove(T _val) {
@@ -363,9 +404,9 @@ public:
 		root = del(root, _val, h);
 	}
 
-	Node<T>* search(T value)
+	Node* search(T value)
 	{
-		Node<T>* t = root;
+		Node* t = root;
 		while (t != nullptr)
 		{
 			if (t->value > value) t = t->left;
@@ -375,10 +416,10 @@ public:
 		return nullptr;
 	}
 
-	Node<T>* getNext(T value)
+	Node* getNext(T value)
 	{
-		Node<T>* closestRight = nullptr;
-		Node<T>* t = root;
+		Node* closestRight = nullptr;
+		Node* t = root;
 		while (t != nullptr)
 		{
 			if (t->value > value)
@@ -391,10 +432,26 @@ public:
 		return closestRight;
 	}
 
-	Node<T>* getPrev(T value)
+	T getNextItem(T value)
 	{
-		Node<T>* closestLeft = nullptr;
-		Node<T>* t = root;
+		Node* closestRight = nullptr;
+		Node* t = root;
+		while (t != nullptr)
+		{
+			if (t->value > value)
+			{
+				closestRight = t;
+				t = t->left;
+			}
+			else if (t->value <= value) t = t->right;
+		}
+		return closestRight->value;
+	}
+
+	Node* getPrev(T value)
+	{
+		Node* closestLeft = nullptr;
+		Node* t = root;
 		while (t != nullptr)
 		{
 			if (t->value >= value) t = t->left;
@@ -405,6 +462,22 @@ public:
 			}
 		}
 		return closestLeft;
+	}
+
+	T getPrevItem(T value)
+	{
+		Node* closestLeft = nullptr;
+		Node* t = root;
+		while (t != nullptr)
+		{
+			if (t->value >= value) t = t->left;
+			else if (t->value < value)
+			{
+				closestLeft = t;
+				t = t->right;
+			}
+		}
+		return closestLeft->value;
 	}
 
 	~AVLtree()
