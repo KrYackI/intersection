@@ -1,4 +1,4 @@
-set(TARGET ITest)
+set(TARGET Intersection)
 
 project(${TARGET})
 
@@ -14,9 +14,12 @@ add_executable(${TARGET} ${TARGET_SRC} ${TARGET_HD})
 target_link_libraries(${TARGET} PUBLIC AVL-tree)
 target_link_libraries(${TARGET} PUBLIC 23-tree)
 target_link_libraries(${TARGET} PUBLIC Algorithm)
-target_link_libraries(${TARGET} PUBLIC gtest)
 
 target_include_directories(${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}${AVL_INCLUDE})
 target_include_directories(${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}${23_INCLUDE})
 target_include_directories(${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}${ALG_INCLUDE})
-target_include_directories(${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}"/gtest")
+
+option(BUILD_EXP "build program for experiments?" OFF)
+if (BUILD_EXP)
+	add_definitions(-DEXPERIMENT)
+endif()

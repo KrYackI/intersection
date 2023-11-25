@@ -1,46 +1,4 @@
 #pragma once
-#include <iostream>
-
-//template <class T>
-//struct Node
-//{
-//    int size = 0;
-//    T value[3];
-//    Node* nodes[4] = { nullptr, nullptr, nullptr, nullptr };
-//
-//    Node() {};
-//    Node(T _val) : size(1) { value[0] = _val; }
-//    Node(const Node& node)
-//    {
-//        for (int i = 0; i < size; ++i)
-//            value[i] = node.value[i];
-//        for (int i = 0; i < size + 1; ++i)
-//            nodes[i] = node.nodes[i];
-//    }
-//    Node& operator=(const Node& node)
-//    {
-//        if (this == &node)
-//            return *this;
-//        for (int i = 0; i < size + 1; ++i)
-//            delete nodes[i];
-//        for (int i = 0; i < node.size + 1; ++i)
-//            if (node.nodes[i])
-//                nodes[i] = node.nodes[i];
-//            else
-//                nodes[i] = nullptr;
-//        return *this;
-//    }
-//
-//    bool is_leaf() {
-//        return (nodes[0] == nullptr) && (nodes[1] == nullptr) && (nodes[2] == nullptr);
-//    }
-//
-//    ~Node()
-//    {
-//        for (int i = 0; i < size + 1; ++i)
-//            delete nodes[i];
-//    }
-//};
 
 template <class T>
 class tree_23
@@ -51,19 +9,19 @@ public:
         int size = 0;
         T value[3];
         Node* nodes[4] = { nullptr, nullptr, nullptr, nullptr };
-
+        int height = 1;
         Node() {};
         Node(T _val) : size(1) { value[0] = _val; }
         Node(const Node& node)
         {
             size = node.size;
+            height = node.height;
             for (int i = 0; i < size; ++i)
                 value[i] = node.value[i];
             for (int i = 0; i < size + 1; ++i)
             {
                 if (node.nodes[i])
                     nodes[i] = new Node{ *node.nodes[i] };
-
             }
         }
         Node& operator=(const Node& node)
@@ -73,14 +31,26 @@ public:
             for (int i = 0; i < size + 1; ++i)
                 delete nodes[i];
             size = node.size;
+            height = node.height;
             for (int i = 0; i < size; ++i)
                 value[i] = node.value[i];
             for (int i = 0; i < size + 1; ++i)
                 if (node.nodes[i])
-                    nodes[i] = new Node{ *node.nodes[i] };
+                    nodes[i] = new Node{ *node.nodes[i] }
                 else
                     nodes[i] = nullptr;
             return *this;
+        }
+
+        int getHeight(Node* cur)
+        {
+            return cur == nullptr ? 0 : cur->height;
+        }
+
+        void balanse()
+        {
+            height = (getHeight(nodes[1]) < getHeight(nodes[0]) ? getHeight(nodes[0]) : getHeight(nodes[1]));
+            height = 1 + (height < getHeight(nodes[2]) ? getHeight(nodes[2]) : height);
         }
 
         bool is_leaf() {
@@ -109,6 +79,45 @@ private:
         if (cur->is_leaf())
             return nullptr;
         return search_rec(cur->nodes[j], j, k);
+    }
+
+    Node* getNextInternal(Node* root, int& i, T k)
+    {
+        Node* cur = root;
+        Node* closestRight = nullptr;
+        while (cur != nullptr)
+        {
+            int j = 0;
+            while (j < cur->size && k >= cur->value[j])
+                ++j;
+            if (j < cur->size)
+            {
+                closestRight = cur;
+                i = j;
+            }
+            cur = cur->nodes[j];
+        }
+        return closestRight;
+    }
+
+    Node* getPrevInternal(Node* root, int& i, T k)
+    {
+        Node* cur = root;
+        Node* closestLeft = nullptr;
+        while (cur != nullptr)
+        {
+            int j = 0;
+            while (j < cur->size && k > cur->value[j])
+                ++j;
+            if (j > 0)
+            {
+                closestLeft = cur;
+                i = j - 1;
+            }
+            cur = cur->nodes[j];
+        }
+
+        return closestLeft;
     }
 
     void split_child(Node* par, int i, Node* cut)
@@ -151,15 +160,10 @@ private:
             while (i >= 0 && k < par->value[i])
                 --i;
             ++i;
-            //if (par->nodes[i]->size == 3)
-            //{
-            //    split_child(par, i, par->nodes[i]);
-            //    if (k > par->value[i])
-            //        ++i;
-            //}
             incert_notfull(par->nodes[i], k);
             if (par->nodes[i]->size == 3)
                 split_child(par, i, par->nodes[i]);
+            par->balanse();
         }
     }
 
@@ -201,20 +205,20 @@ private:
                     else
                     {
                         int i;
-                        Node* r = getNext(i, k);
+                        Node* r = getNextInternal(cur->nodes[j + 1], i, k);
                         T t = r->value[i];
                         r->value[i] = cur->value[j];
                         cur->value[j] = t;
-                        remove(r, k);
+                        remove(cur->nodes[j + 1], k);
                     }
                 else
                 {
                     int i;
-                    Node* l = getPrev(i, k);
+                    Node* l = getPrevInternal(cur->nodes[j], i, k);
                     T t = l->value[i];
                     l->value[i] = cur->value[j];
                     cur->value[j] = t;
-                    remove(l, k);
+                    remove(cur->nodes[j], k);
                 }
             }
         else
@@ -301,11 +305,12 @@ private:
         }
         if (cur->nodes[j]->size == 3)
             split_child(cur, j, cur->nodes[j]);
+        cur->balanse();
     }
 
 
 public:
-    tree_23() {root = new Node; }
+    tree_23() {root = nullptr; }
     tree_23(const tree_23& _tree) 
     {
         if (_tree.root)
@@ -319,6 +324,11 @@ public:
         delete root;
         root = _tree.root;
         return *this;
+    }
+
+    int getHeight()
+    {
+        return root->height;
     }
 
     Node* search(int& i, T k)
@@ -344,107 +354,51 @@ public:
 
     Node* getNext(int& i, T k)
     {
-        Node* cur = root;
-        Node* closestRight = nullptr;
-        while (cur != nullptr)
-        {
-            int j = 0;
-            while (j < cur->size && k >= cur->value[j])
-                ++j;
-            if (j < cur->size)
-            {
-                closestRight = cur;
-                i = j;
-            }
-            cur = cur->nodes[j];
-        }
-        return closestRight;
+        return getNextInternal(root, i, k);
+    }
+
+    Node* getNext(T k)
+    {
+        int i;
+        return getNextInternal(root, i, k);
     }
 
     T getNextItem(T k)
     {
-        Node* cur = root;
-        Node* closestRight = nullptr;
-        while (cur != nullptr)
-        {
-            int j = 0;
-            while (j < cur->size && k >= cur->value[j])
-                ++j;
-            if (j < cur->size)
-            {
-                closestRight = cur;
-            }
-            cur = cur->nodes[j];
-        }
-        return (closestRight->value[0] == k) ? closestRight->value[1]: closestRight->value[0];
+        int i;
+        return getNextInternal(root, i, k)->value[i];
     }
 
     Node* getPrev(int& i, T k)
     {
-        Node* cur = root;
-        Node* closestLeft = nullptr;
-        while (cur != nullptr)
-        {
-            int j = 0;
-            while (j < cur->size && k > cur->value[j])
-                ++j;
-            if (j > 0)
-            {
-                closestLeft = cur;
-                i = j - 1;
-            }
-            cur = cur->nodes[j];
-        }
-
-        return closestLeft;
+        return getPrevInternal(root, i, k);
     }
 
     Node* getPrev(T k)
     {
-        Node* cur = root;
-        Node* closestLeft = nullptr;
-        while (cur != nullptr)
-        {
-            int j = 0;
-            while (j < cur->size && k > cur->value[j])
-                ++j;
-            if (j > 0)
-            {
-                closestLeft = cur;
-            }
-            cur = cur->nodes[j];
-        }
-
-        return closestLeft;
+        int i;
+        return getPrevInternal(root, i, k);
     }
 
     T getPrevItem(T k)
     {
-        Node* cur = root;
-        Node* closestLeft = nullptr;
-        while (cur != nullptr)
-        {
-            int j = 0;
-            while (j < cur->size && k > cur->value[j])
-                ++j;
-            if (j > 0)
-            {
-                closestLeft = cur;
-            }
-            cur = cur->nodes[j];
-        }
-
-        return (closestLeft->value[1] == k) ? closestLeft->value[0]: closestLeft->value[1];
+        int i;
+        return getPrevInternal(root, i, k)->value[i];
     }
 
 	void insert(T k) 
     {
+        if (root == nullptr)
+        {
+            root = new Node(k);
+            return;
+        }
         incert_notfull(root, k);
         if (root->size == 3)
         {
             Node* t = new Node;
             t->nodes[0] = root;
-            
+            t->height = 1 + root->height;
             
             split_child(t, 0, root);
             root = t;
@@ -461,35 +415,6 @@ public:
             t->nodes[0] = nullptr;
             delete t;
         }
-    }
-
-    void printt(int i)
-    {
-        for(int j = 0; j < i; ++j)
-            std::cout << '\t';
-    }
-
-    void printr(Node* root, int i)
-    {
-        if (root != nullptr)
-        {
-            printt(i);
-            for (int j = 0; j < root->size; ++j)
-            {
-                std::cout << root->value[j] << ' ';
-            }
-            std::cout << '\n';
-            if (!root->is_leaf())
-                for (int j = 0; j <= root->size; ++j)
-                {
-                    printr(root->nodes[j], i+1);
-                }
-        }
-    }
-
-    void print()
-    {
-        printr(root, 0);
     }
 
     ~tree_23()
