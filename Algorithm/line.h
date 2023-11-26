@@ -105,14 +105,14 @@ public:
 
 		double d = d1 * d2;
 
-		if (d <= 0) b1 = true;
+		if (d < 0 || d1 == 0 && v2x < v1x || d2 == 0 && v3x < v1x) b1 = true;
 
 		d1 = v4x * v5y - v4y * v5x;
 		d2 = v4x * v6y - v4y * v6x;
 
 		d = d1 * d2;
 
-		if (d <= 0) b2 = true;
+		if (d < 0 || d1 == 0 && v5x < v4x || d2 == 0 && v6x < v4x) b2 = true;
 
 		return b1 && b2;
 	}
